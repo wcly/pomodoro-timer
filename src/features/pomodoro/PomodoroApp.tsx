@@ -2,7 +2,8 @@ import { useState } from "react";
 import { SessionDetailPage } from "./screens/SessionDetailPage";
 import { StatsPage } from "./screens/StatsPage";
 import { TimerPage } from "./screens/TimerPage";
-import type { SessionDetail, SessionSummary } from "./types";
+import type { SessionDetail, SessionSummary, TimerDurations } from "./types";
+import { usePomodoroTimer } from "./usePomodoroTimer";
 
 const demoSessions: SessionSummary[] = [
   {
@@ -61,8 +62,15 @@ type PageState =
   | { name: "stats" }
   | { name: "detail"; sessionId: string };
 
+const demoDurations: TimerDurations = {
+  focus: 1500,
+  shortBreak: 300,
+  longBreak: 900,
+};
+
 export function PomodoroApp() {
   const [page, setPage] = useState<PageState>({ name: "timer" });
+  const timer = usePomodoroTimer(demoDurations);
 
   if (page.name === "stats") {
     return (
@@ -83,10 +91,14 @@ export function PomodoroApp() {
 
   return (
     <TimerPage
-      currentMode="focus"
-      remainingSeconds={1500}
+      currentMode={timer.mode}
+      remainingSeconds={timer.remainingSeconds}
       completedCount={3}
       currentAppName="VS Code"
+      isRunning={timer.isRunning}
+      onStart={timer.start}
+      onPause={timer.pause}
+      onReset={() => timer.reset()}
       onOpenStats={() => setPage({ name: "stats" })}
     />
   );

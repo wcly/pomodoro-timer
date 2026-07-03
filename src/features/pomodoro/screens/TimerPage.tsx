@@ -24,10 +24,12 @@ export function TimerPage(props: TimerPageProps) {
         <h1 className="timer-display">{formatClock(props.remainingSeconds)}</h1>
         <p className="current-app">当前记录：{props.currentAppName}</p>
         <div className="action-row">
-          <ActionButton emphasis="primary" onClick={props.onStart}>
+          <ActionButton emphasis="primary" onClick={props.onStart} disabled={props.isRunning}>
             开始
           </ActionButton>
-          <ActionButton onClick={props.onPause}>暂停</ActionButton>
+          <ActionButton onClick={props.onPause} disabled={!props.isRunning}>
+            暂停
+          </ActionButton>
           <ActionButton onClick={props.onReset}>重置</ActionButton>
         </div>
         <p className="session-meta">已完成：{props.completedCount}</p>
