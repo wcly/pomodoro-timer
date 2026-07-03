@@ -11,6 +11,12 @@ const demoSessions: SessionSummary[] = [
     endedAt: "2026-07-03T15:00:00.000Z",
     durationSeconds: 1500,
   },
+  {
+    id: "session-2",
+    startedAt: "2026-07-03T16:00:00.000Z",
+    endedAt: "2026-07-03T16:25:00.000Z",
+    durationSeconds: 1500,
+  },
 ];
 
 const demoDetails: Record<string, SessionDetail> = {
@@ -28,6 +34,23 @@ const demoDetails: Record<string, SessionDetail> = {
         appName: "Chrome",
         durationSeconds: 390,
         percentage: 0.26,
+      },
+    ],
+  },
+  "session-2": {
+    session: demoSessions[1],
+    usage: [
+      {
+        bundleId: "md.obsidian",
+        appName: "Obsidian",
+        durationSeconds: 810,
+        percentage: 0.54,
+      },
+      {
+        bundleId: "com.apple.Safari",
+        appName: "Safari",
+        durationSeconds: 420,
+        percentage: 0.28,
       },
     ],
   },
@@ -53,7 +76,7 @@ export function PomodoroApp() {
   }
 
   if (page.name === "detail") {
-    const detail = demoDetails[page.sessionId] ?? demoDetails["session-1"];
+    const detail = demoDetails[page.sessionId] ?? null;
 
     return <SessionDetailPage detail={detail} onBack={() => setPage({ name: "stats" })} />;
   }

@@ -1,5 +1,5 @@
 import { ActionButton } from "../components/ActionButton";
-import { ModeTabs } from "../components/ModeTabs";
+import { ModeTabs, timerModeLabels } from "../components/ModeTabs";
 import { formatClock } from "../formatters";
 import type { TimerMode } from "../types";
 
@@ -20,7 +20,7 @@ export function TimerPage(props: TimerPageProps) {
     <main className="app-shell">
       <section className="page-frame timer-page">
         <ModeTabs currentMode={props.currentMode} />
-        <div className="status-badge">专注</div>
+        <div className="status-badge">{timerModeLabels[props.currentMode]}</div>
         <h1 className="timer-display">{formatClock(props.remainingSeconds)}</h1>
         <p className="current-app">当前记录：{props.currentAppName}</p>
         <div className="action-row">
