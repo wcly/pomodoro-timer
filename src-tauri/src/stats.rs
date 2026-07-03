@@ -1,15 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
-
-#[cfg(test)]
-#[path = "models.rs"]
-pub mod models;
-
-#[cfg(not(test))]
 use crate::models::{ForegroundSample, SessionAppUsage, SessionRecord, TodayStats};
-#[cfg(test)]
-use models::{ForegroundSample, SessionAppUsage, SessionRecord, TodayStats};
 
 pub fn aggregate_samples(
     session_id: &str,

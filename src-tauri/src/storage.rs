@@ -1,21 +1,8 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-#[cfg(test)]
-#[path = "error.rs"]
-pub mod error;
-#[cfg(test)]
-#[path = "models.rs"]
-pub mod models;
-
-#[cfg(not(test))]
 use crate::error::AppError;
-#[cfg(not(test))]
 use crate::models::{SessionAppUsage, SessionRecord};
-#[cfg(test)]
-use error::AppError;
-#[cfg(test)]
-use models::{SessionAppUsage, SessionRecord};
 
 #[derive(Debug, Clone)]
 pub struct JsonStorage {
