@@ -1,8 +1,10 @@
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use crate::error::AppError;
 use crate::models::{SessionAppUsage, SessionRecord};
+use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct JsonStorage {
@@ -46,7 +48,30 @@ impl JsonStorage {
         }
 
         let raw = serde_json::to_string_pretty(value)?;
-        fs::write(path, raw)?;
+        let parent = path.parent().unwrap_or_else(|| Path::new("."));
+        let file_name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("storage.json");
+        let temp_path = parent.join(format!(".{file_name}.{}.tmp", Uuid::new_v4()));
+
+        let write_result = (|| -> Result<(), AppError> {
+            let mut temp_file = fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&temp_path)?;
+            temp_file.write_all(raw.as_bytes())?;
+            temp_file.sync_all()?;
+            drop(temp_file);
+            fs::rename(&temp_path, path)?;
+            Ok(())
+        })();
+
+        if write_result.is_err() {
+            let _ = fs::remove_file(&temp_path);
+        }
+
+        write_result?;
         Ok(())
     }
 }
