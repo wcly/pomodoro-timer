@@ -5,6 +5,21 @@ import {
   formatPercent,
 } from "../formatters";
 
+function withTimeZone<T>(timeZone: string, callback: () => T): T {
+  const previousTimeZone = process.env.TZ;
+  process.env.TZ = timeZone;
+
+  try {
+    return callback();
+  } finally {
+    if (previousTimeZone === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = previousTimeZone;
+    }
+  }
+}
+
 describe("formatters", () => {
   test('formatClock(1500) === "25:00"', () => {
     expect(formatClock(1500)).toBe("25:00");
@@ -31,11 +46,24 @@ describe("formatters", () => {
   });
 
   test('buildSessionRangeLabel contains "14:30"', () => {
-    expect(
+    const label = withTimeZone("UTC", () =>
       buildSessionRangeLabel(
         "2026-07-03T14:30:00.000Z",
         "2026-07-03T15:00:00.000Z",
       ),
-    ).toContain("14:30");
+    );
+
+    expect(label).toContain("14:30");
+  });
+
+  test("buildSessionRangeLabel respects the current local timezone", () => {
+    const label = withTimeZone("Asia/Shanghai", () =>
+      buildSessionRangeLabel(
+        "2026-07-03T14:30:00.000Z",
+        "2026-07-03T15:00:00.000Z",
+      ),
+    );
+
+    expect(label).toContain("22:30");
   });
 });

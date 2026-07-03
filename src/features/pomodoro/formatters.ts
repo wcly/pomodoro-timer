@@ -31,7 +31,6 @@ export function buildSessionRangeLabel(startedAt: string, endedAt: string): stri
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-    timeZone: "UTC",
   });
 
   return `${formatter.format(new Date(startedAt))} - ${formatter.format(new Date(endedAt))}`;
