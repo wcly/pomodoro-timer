@@ -14,10 +14,24 @@ export function usePomodoroTimer(
   const [isRunning, setIsRunning] = useState(false);
   const [remainingSeconds, setRemainingSeconds] = useState(durations.focus);
   const optionsRef = useRef(options);
+  const previousModeRef = useRef(mode);
+  const previousModeDurationRef = useRef(durations.focus);
 
   optionsRef.current = options;
 
   const modeDuration = useMemo(() => durations[mode], [durations, mode]);
+
+  useEffect(() => {
+    const modeChanged = previousModeRef.current !== mode;
+    const modeDurationChanged = previousModeDurationRef.current !== modeDuration;
+
+    if (!isRunning && (modeChanged || modeDurationChanged)) {
+      setRemainingSeconds(modeDuration);
+    }
+
+    previousModeRef.current = mode;
+    previousModeDurationRef.current = modeDuration;
+  }, [isRunning, mode, modeDuration]);
 
   useEffect(() => {
     if (!isRunning) {

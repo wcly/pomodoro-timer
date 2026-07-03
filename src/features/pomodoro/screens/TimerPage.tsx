@@ -8,10 +8,10 @@ interface TimerPageProps {
   remainingSeconds: number;
   completedCount: number;
   currentAppName: string;
-  isRunning?: boolean;
-  onStart?: () => void;
-  onPause?: () => void;
-  onReset?: () => void;
+  isRunning: boolean;
+  onStart: () => void;
+  onPause: () => void;
+  onReset: () => void;
   onOpenStats: () => void;
 }
 
