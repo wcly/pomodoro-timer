@@ -8,8 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "test": "node --input-type=module -e \"import { webcrypto } from 'node:crypto'; if (typeof globalThis.crypto?.getRandomValues !== 'function') { Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true }); } process.argv = ['node', 'vitest', 'run']; await import(new URL('./node_modules/vitest/vitest.mjs', import.meta.url));\"",
-    "test:watch": "node --input-type=module -e \"import { webcrypto } from 'node:crypto'; if (typeof globalThis.crypto?.getRandomValues !== 'function') { Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true }); } process.argv = ['node', 'vitest']; await import(new URL('./node_modules/vitest/vitest.mjs', import.meta.url));\""
+    "test": "node --input-type=module -e \"import { webcrypto } from 'node:crypto'; if (typeof globalThis.crypto?.getRandomValues !== 'function') { Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true }); } process.argv = ['node', 'vitest', 'run']; await import('./node_modules/vitest/vitest.mjs');\"",
+    "test:watch": "node --input-type=module -e \"import { webcrypto } from 'node:crypto'; if (typeof globalThis.crypto?.getRandomValues !== 'function') { Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true }); } process.argv = ['node', 'vitest']; await import('./node_modules/vitest/vitest.mjs');\""
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
