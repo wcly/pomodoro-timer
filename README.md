@@ -73,6 +73,18 @@ pnpm tauri dev
 
 这个模式下可以一起看前端和 Rust 侧输出，也是验证前台应用追踪是否正常的唯一可靠方式。
 
+## 安装
+
+从 [Releases](https://github.com/wlcy/pomodoro-timer/releases) 下载 `.dmg`，双击挂载后拖入 `Applications`。
+
+macOS 会提示"已损坏，无法打开"，因为 app 未签名。终端运行一行即可：
+
+```bash
+xattr -cr /Applications/番茄工作钟.app
+```
+
+然后就能正常打开了。这是 macOS Gatekeeper 对未签名 app 的标准行为，不是文件真的损坏。
+
 ## 支持的操作系统
 
 - 完整功能目前只支持 `macOS`
