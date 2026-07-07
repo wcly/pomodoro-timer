@@ -3,8 +3,8 @@ use tauri::State;
 
 use crate::error::AppError;
 use crate::foreground::current_foreground_app;
-use crate::models::SessionAppUsage;
 use crate::models::ForegroundSample;
+use crate::models::SessionAppUsage;
 use crate::stats::aggregate_samples;
 use crate::AppState;
 
@@ -57,9 +57,14 @@ pub fn finish_focus_session(
         return Err(AppError::SessionIdMismatch);
     }
 
-    Ok(aggregate_samples(
-        &completed.session_id,
-        duration_seconds,
-        &completed.samples,
-    ))
+    Ok(aggregate_samples(duration_seconds, &completed.samples)
+        .into_iter()
+        .map(|row| SessionAppUsage {
+            session_id: completed.session_id.clone(),
+            bundle_id: row.bundle_id,
+            app_name: row.app_name,
+            duration_seconds: row.duration_seconds,
+            percentage: row.percentage,
+        })
+        .collect())
 }

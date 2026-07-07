@@ -3,6 +3,7 @@ mod error;
 mod foreground;
 mod models;
 mod runtime;
+mod storage;
 mod stats;
 
 
@@ -32,6 +33,5 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
 
 

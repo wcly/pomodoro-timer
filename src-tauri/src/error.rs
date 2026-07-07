@@ -11,10 +11,18 @@ pub enum AppError {
     SessionIdMismatch,
     #[error("foreground tracking is only supported on macOS")]
     UnsupportedPlatform,
+    #[error("{0}")]
+    Database(String),
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error(transparent)]
     Serde(#[from] serde_json::Error),
+}
+
+impl AppError {
+    pub fn database<E: ToString>(error: E) -> Self {
+        Self::Database(error.to_string())
+    }
 }
 
 impl Serialize for AppError {

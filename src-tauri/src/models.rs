@@ -27,3 +27,29 @@ pub struct SessionAppUsage {
     pub duration_seconds: i64,
     pub percentage: f64,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionSummary {
+    pub id: String,
+    pub mode: String,
+    pub started_at: String,
+    pub ended_at: String,
+    pub duration_seconds: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionUsageRow {
+    pub bundle_id: String,
+    pub app_name: String,
+    pub duration_seconds: i64,
+    pub percentage: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionDetail {
+    pub session: SessionSummary,
+    pub usage: Vec<SessionUsageRow>,
+}

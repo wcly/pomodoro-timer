@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 
-use crate::models::{ForegroundSample, SessionAppUsage};
+use crate::models::{ForegroundSample, SessionUsageRow};
 
 pub fn aggregate_samples(
-    session_id: &str,
     session_duration_seconds: i64,
     samples: &[ForegroundSample],
-) -> Vec<SessionAppUsage> {
+) -> Vec<SessionUsageRow> {
     let percentage_denominator = if session_duration_seconds > 0 {
         session_duration_seconds as f64
     } else {
@@ -19,10 +18,9 @@ pub fn aggregate_samples(
         *seconds_by_bundle.entry(key).or_insert(0) += 1;
     }
 
-    let mut rows: Vec<SessionAppUsage> = seconds_by_bundle
+    let mut rows: Vec<SessionUsageRow> = seconds_by_bundle
         .into_iter()
-        .map(|((bundle_id, app_name), duration_seconds)| SessionAppUsage {
-            session_id: session_id.to_string(),
+        .map(|((bundle_id, app_name), duration_seconds)| SessionUsageRow {
             bundle_id,
             app_name,
             duration_seconds,
@@ -70,7 +68,7 @@ mod tests {
             ),
         ];
 
-        let rows = aggregate_samples("session-1", 3, &samples);
+        let rows = aggregate_samples(3, &samples);
 
         assert_eq!(rows[0].app_name, "VS Code");
         assert_eq!(rows[0].duration_seconds, 2);
@@ -93,7 +91,7 @@ mod tests {
             ),
         ];
 
-        let rows = aggregate_samples("session-1", 0, &samples);
+        let rows = aggregate_samples(0, &samples);
 
         assert_eq!(rows.len(), 2);
         assert_eq!(rows[0].percentage, 0.0);
@@ -115,7 +113,7 @@ mod tests {
             ),
         ];
 
-        let rows = aggregate_samples("session-1", 2, &samples);
+        let rows = aggregate_samples(2, &samples);
 
         assert_eq!(rows[0].bundle_id, "com.alpha.Editor");
         assert_eq!(rows[0].app_name, "Alpha");
