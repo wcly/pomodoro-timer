@@ -53,7 +53,7 @@ button {
 
 .app-shell--timer {
   position: relative;
-  align-items: center;
+  align-items: flex-start;
   overflow: hidden;
 }
 
