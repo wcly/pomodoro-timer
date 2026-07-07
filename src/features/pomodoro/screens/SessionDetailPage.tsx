@@ -14,7 +14,7 @@ export function SessionDetailPage({ detail, onBack }: SessionDetailPageProps) {
       <main className="app-shell">
         <section className="page-frame">
           <h1 className="page-title">使用详情</h1>
-          <p className="empty-state">未找到该专注记录</p>
+          <p className="empty-state">未找到该记录</p>
           <ActionButton onClick={onBack}>返回</ActionButton>
         </section>
       </main>
@@ -22,19 +22,51 @@ export function SessionDetailPage({ detail, onBack }: SessionDetailPageProps) {
   }
 
   return (
-    <main className="app-shell">
-      <section className="page-frame">
-        <h1 className="page-title">使用详情</h1>
-        <div className="detail-hero">
-          <span>{buildSessionRangeLabel(detail.session.startedAt, detail.session.endedAt)}</span>
-          <strong>{formatDuration(detail.session.durationSeconds)}</strong>
+    <main className="app-shell app-shell--sheet app-shell--detail">
+      <div className="sheet-deco sheet-deco--detail-accent" aria-hidden="true" />
+      <div className="sheet-deco sheet-deco--detail-ink" aria-hidden="true" />
+      <section className="page-frame detail-frame">
+        <h1 className="page-title page-title--detail">使用详情</h1>
+        <div className="detail-session-card">
+          <div className="detail-session-card__column">
+            <span className="detail-session-card__label">时段</span>
+            <strong className="detail-session-card__value">
+              {buildSessionRangeLabel(detail.session.startedAt, detail.session.endedAt)}
+            </strong>
+          </div>
+          <div className="detail-session-card__column detail-session-card__column--summary">
+            <span className="detail-session-card__label">总时长</span>
+            <strong className="detail-session-card__value">
+              {formatDuration(detail.session.durationSeconds)}
+            </strong>
+          </div>
         </div>
-        <div className="usage-list">
-          {detail.usage.map((row) => (
-            <UsageRow key={`${row.bundleId}-${row.appName}`} row={row} />
-          ))}
+        <div className="detail-columns" aria-hidden="true">
+          <span>应用</span>
+          <span>时长</span>
+          <span>占比</span>
         </div>
-        <ActionButton onClick={onBack}>返回</ActionButton>
+        <div className="usage-list usage-list--detailed">
+          {detail.usage.length === 0 ? (
+            <p className="empty-state">暂无应用使用数据</p>
+          ) : (
+            detail.usage.map((row) => (
+              <UsageRow
+                key={`${row.bundleId}-${row.appName}`}
+                row={row}
+                variant="framed"
+              />
+            ))
+          )}
+        </div>
+        <div className="detail-actions">
+          <ActionButton emphasis="ink" className="back-button" onClick={onBack}>
+            <span className="back-button__arrow" aria-hidden="true">
+              ←
+            </span>
+            <span>返回</span>
+          </ActionButton>
+        </div>
       </section>
     </main>
   );

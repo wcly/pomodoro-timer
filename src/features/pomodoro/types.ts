@@ -13,6 +13,7 @@ export interface TodayStats {
 
 export interface SessionSummary {
   id: string;
+  mode: TimerMode;
   startedAt: string;
   endedAt: string;
   durationSeconds: number;
@@ -28,6 +29,13 @@ export interface SessionUsageRow {
 export interface SessionDetail {
   session: SessionSummary;
   usage: SessionUsageRow[];
+}
+
+export interface SessionHistoryItemViewModel {
+  session: SessionSummary;
+  calendarLabel: string;
+  modeLabel: string;
+  durationLabel: string;
 }
 
 export interface BootstrapState {

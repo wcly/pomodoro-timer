@@ -8,6 +8,12 @@ pub struct FocusRuntime {
 }
 
 #[derive(Debug)]
+pub struct CompletedFocusSession {
+    pub session_id: String,
+    pub samples: Vec<ForegroundSample>,
+}
+
+#[derive(Debug)]
 pub struct RunningFocusSession {
     pub session_id: String,
     pub started_at: DateTime<Utc>,
@@ -50,6 +56,20 @@ impl FocusRuntime {
     pub fn active(&self) -> Option<&RunningFocusSession> {
         self.active.as_ref()
     }
+
+    pub fn finish(&mut self) -> Result<CompletedFocusSession, AppError> {
+        let active = self.active.take().ok_or(AppError::NoActiveSession)?;
+
+        Ok(CompletedFocusSession {
+            session_id: active.session_id,
+            samples: active.samples,
+        })
+    }
+
+    pub fn reset(&mut self) -> Result<(), AppError> {
+        self.active.take().ok_or(AppError::NoActiveSession)?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -83,5 +103,26 @@ mod tests {
                 ))
                 .is_err()
         );
+    }
+
+    #[test]
+    fn finish_returns_collected_samples_and_clears_the_active_session() {
+        let mut runtime = FocusRuntime::default();
+        runtime
+            .start("session-1".into(), Utc.timestamp_opt(100, 0).unwrap())
+            .unwrap();
+        runtime
+            .capture(ForegroundSample::new(
+                "com.microsoft.VSCode",
+                "VS Code",
+                Utc.timestamp_opt(101, 0).unwrap(),
+            ))
+            .unwrap();
+
+        let completed = runtime.finish().unwrap();
+
+        assert_eq!(completed.session_id, "session-1");
+        assert_eq!(completed.samples.len(), 1);
+        assert!(runtime.active().is_none());
     }
 }

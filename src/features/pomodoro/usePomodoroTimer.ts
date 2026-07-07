@@ -16,17 +16,23 @@ export function usePomodoroTimer(
   const optionsRef = useRef(options);
   const previousModeRef = useRef(mode);
   const previousModeDurationRef = useRef(durations.focus);
+  const remainingSecondsRef = useRef(durations.focus);
 
   optionsRef.current = options;
 
   const modeDuration = useMemo(() => durations[mode], [durations, mode]);
+
+  function syncRemainingSeconds(nextValue: number) {
+    remainingSecondsRef.current = nextValue;
+    setRemainingSeconds(nextValue);
+  }
 
   useEffect(() => {
     const modeChanged = previousModeRef.current !== mode;
     const modeDurationChanged = previousModeDurationRef.current !== modeDuration;
 
     if (!isRunning && (modeChanged || modeDurationChanged)) {
-      setRemainingSeconds(modeDuration);
+      syncRemainingSeconds(modeDuration);
     }
 
     previousModeRef.current = mode;
@@ -39,20 +45,16 @@ export function usePomodoroTimer(
     }
 
     const intervalId = window.setInterval(() => {
-      setRemainingSeconds((current) => {
-        const nextValue = current - 1;
+      const nextValue = remainingSecondsRef.current - 1;
 
-        optionsRef.current.onSecondElapsed?.();
+      syncRemainingSeconds(Math.max(nextValue, 0));
+      optionsRef.current.onSecondElapsed?.();
 
-        if (nextValue <= 0) {
-          window.clearInterval(intervalId);
-          setIsRunning(false);
-          optionsRef.current.onFinished?.();
-          return 0;
-        }
-
-        return nextValue;
-      });
+      if (nextValue <= 0) {
+        window.clearInterval(intervalId);
+        setIsRunning(false);
+        optionsRef.current.onFinished?.();
+      }
     }, 1000);
 
     return () => window.clearInterval(intervalId);
@@ -73,7 +75,7 @@ export function usePomodoroTimer(
   function reset(nextMode: TimerMode = mode) {
     setIsRunning(false);
     setMode(nextMode);
-    setRemainingSeconds(durations[nextMode]);
+    syncRemainingSeconds(durations[nextMode]);
   }
 
   function changeMode(nextMode: TimerMode) {

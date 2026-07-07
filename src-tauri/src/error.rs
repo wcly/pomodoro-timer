@@ -7,6 +7,8 @@ pub enum AppError {
     NoActiveSession,
     #[error("the active focus session is paused")]
     SessionPaused,
+    #[error("the provided session id does not match the active focus session")]
+    SessionIdMismatch,
     #[error("foreground tracking is only supported on macOS")]
     UnsupportedPlatform,
     #[error(transparent)]

@@ -1,5 +1,10 @@
+import React from "react";
 import { act, renderHook } from "@testing-library/react";
 import { usePomodoroTimer } from "../usePomodoroTimer";
+
+function StrictModeWrapper({ children }: { children: React.ReactNode }) {
+  return <React.StrictMode>{children}</React.StrictMode>;
+}
 
 describe("usePomodoroTimer", () => {
   beforeEach(() => {
@@ -24,6 +29,24 @@ describe("usePomodoroTimer", () => {
 
     expect(result.current.remainingSeconds).toBe(3);
     expect(onSecondElapsed).toHaveBeenCalledTimes(2);
+  });
+
+  test("fires the elapsed-second callback once per tick in strict mode", () => {
+    const onSecondElapsed = vi.fn();
+    const { result } = renderHook(
+      () =>
+        usePomodoroTimer(
+          { focus: 5, shortBreak: 3, longBreak: 10 },
+          { onSecondElapsed },
+        ),
+      { wrapper: StrictModeWrapper },
+    );
+
+    act(() => result.current.start());
+    act(() => vi.advanceTimersByTime(1000));
+
+    expect(result.current.remainingSeconds).toBe(4);
+    expect(onSecondElapsed).toHaveBeenCalledTimes(1);
   });
 
   test("pauses and resets correctly", () => {
@@ -65,6 +88,25 @@ describe("usePomodoroTimer", () => {
     expect(result.current.remainingSeconds).toBe(0);
     expect(result.current.isRunning).toBe(false);
     expect(onSecondElapsed).toHaveBeenCalledTimes(2);
+    expect(onFinished).toHaveBeenCalledTimes(1);
+  });
+
+  test("fires the finished callback once in strict mode", () => {
+    const onFinished = vi.fn();
+    const { result } = renderHook(
+      () =>
+        usePomodoroTimer(
+          { focus: 1, shortBreak: 3, longBreak: 10 },
+          { onFinished },
+        ),
+      { wrapper: StrictModeWrapper },
+    );
+
+    act(() => result.current.start());
+    act(() => vi.advanceTimersByTime(1000));
+
+    expect(result.current.remainingSeconds).toBe(0);
+    expect(result.current.isRunning).toBe(false);
     expect(onFinished).toHaveBeenCalledTimes(1);
   });
 

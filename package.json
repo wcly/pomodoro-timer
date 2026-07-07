@@ -3,13 +3,17 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "test": "node --input-type=module -e \"import { webcrypto } from 'node:crypto'; if (typeof globalThis.crypto?.getRandomValues !== 'function') { Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true }); } process.argv = ['node', 'vitest', 'run']; await import('./node_modules/vitest/vitest.mjs');\"",
-    "test:watch": "node --input-type=module -e \"import { webcrypto } from 'node:crypto'; if (typeof globalThis.crypto?.getRandomValues !== 'function') { Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true }); } process.argv = ['node', 'vitest']; await import('./node_modules/vitest/vitest.mjs');\""
+    "postinstall": "node_path=\"$npm_node_execpath\" && mkdir -p ./node_modules/.bin && printf '%s\\n' '#!/bin/sh' \"exec \\\"$node_path\\\" \\\"\\$@\\\"\" > ./node_modules/.bin/node && chmod +x ./node_modules/.bin/node",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",

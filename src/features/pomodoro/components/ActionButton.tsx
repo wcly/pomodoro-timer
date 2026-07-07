@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  emphasis?: "primary" | "secondary" | "ghost";
+  emphasis?: "primary" | "secondary" | "ghost" | "ink";
 }
 
 export function ActionButton({

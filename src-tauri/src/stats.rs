@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
-use crate::models::{ForegroundSample, SessionAppUsage, SessionRecord, TodayStats};
+use crate::models::{ForegroundSample, SessionAppUsage, SessionRecord, TimerMode, TodayStats};
 
 pub fn aggregate_samples(
     session_id: &str,
@@ -48,7 +48,7 @@ pub fn aggregate_samples(
 pub fn summarize_today(sessions: &[SessionRecord], day_start: DateTime<Utc>) -> TodayStats {
     let filtered: Vec<&SessionRecord> = sessions
         .iter()
-        .filter(|session| session.started_at >= day_start)
+        .filter(|session| session.started_at >= day_start && session.mode == TimerMode::Focus)
         .collect();
 
     TodayStats {
@@ -60,7 +60,7 @@ pub fn summarize_today(sessions: &[SessionRecord], day_start: DateTime<Utc>) -> 
 #[cfg(test)]
 mod tests {
     use super::{aggregate_samples, summarize_today};
-    use crate::models::{ForegroundSample, SessionRecord};
+    use crate::models::{ForegroundSample, SessionRecord, TimerMode};
     use chrono::{TimeZone, Utc};
 
     #[test]
@@ -150,6 +150,13 @@ mod tests {
                 Utc.timestamp_opt(10, 0).unwrap(),
                 Utc.timestamp_opt(610, 0).unwrap(),
                 600,
+            ),
+            SessionRecord::new_completed_with_mode(
+                "c",
+                TimerMode::ShortBreak,
+                Utc.timestamp_opt(120, 0).unwrap(),
+                Utc.timestamp_opt(420, 0).unwrap(),
+                300,
             ),
         ];
 
