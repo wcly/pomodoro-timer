@@ -9,8 +9,13 @@ interface UsageRowProps {
 
 function formatUsageDuration(totalSeconds: number): string {
   const minutes = totalSeconds / 60;
+  const roundedMinutes = minutes.toFixed(1);
 
-  return Number.isInteger(minutes) ? `${minutes}m` : `${minutes.toFixed(1)}m`;
+  if (totalSeconds > 0 && roundedMinutes === "0.0") {
+    return "<0.1m";
+  }
+
+  return Number.isInteger(minutes) ? `${minutes}m` : `${roundedMinutes}m`;
 }
 
 function hashUsageSeed(seed: string): number {

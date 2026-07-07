@@ -60,3 +60,19 @@ test("assigns distinct stable colors to usage rows", () => {
       .trim(),
   ).toBe(colors[0]);
 });
+
+test("shows less-than label for sub-tenth-minute usage", () => {
+  const { getByText } = render(
+    <UsageRow
+      row={{
+        bundleId: "com.jetbrains.WebStorm",
+        appName: "WebStorm",
+        durationSeconds: 1,
+        percentage: 0.001,
+      }}
+      variant="framed"
+    />,
+  );
+
+  expect(getByText("<0.1m")).toBeInTheDocument();
+});
