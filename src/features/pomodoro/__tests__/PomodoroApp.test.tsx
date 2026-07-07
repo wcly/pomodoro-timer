@@ -61,7 +61,7 @@ test("records a finished focus session and exposes it in stats and detail", () =
     });
 
     expect(screen.getByText("使用详情")).toBeInTheDocument();
-    expect(screen.queryByText("模式")).not.toBeInTheDocument();
+    expect(screen.getByText("模式")).toBeInTheDocument();
     expect(screen.getByText("1m", { selector: ".detail-session-card__value" })).toBeInTheDocument();
     expect(screen.getByText("暂无应用使用数据")).toBeInTheDocument();
   } finally {
@@ -104,7 +104,7 @@ test("records a finished short break in history and detail without affecting foc
     });
 
     expect(screen.getByText("使用详情")).toBeInTheDocument();
-    expect(screen.queryByText("模式")).not.toBeInTheDocument();
+    expect(screen.getByText("模式")).toBeInTheDocument();
     expect(screen.getByText("1m", { selector: ".detail-session-card__value" })).toBeInTheDocument();
     expect(screen.getByText("暂无应用使用数据")).toBeInTheDocument();
   } finally {
@@ -141,6 +141,6 @@ test("treats legacy sessions without a mode as focus sessions", async () => {
 
   await user.click(screen.getByRole("button", { name: /查看详情/i }));
 
-  expect(screen.queryByText("模式")).not.toBeInTheDocument();
+  expect(screen.getByText("模式")).toBeInTheDocument();
   expect(screen.getByText("25m", { selector: ".detail-session-card__value" })).toBeInTheDocument();
 });

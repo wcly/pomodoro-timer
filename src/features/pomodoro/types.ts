@@ -43,3 +43,10 @@ export interface BootstrapState {
   todayStats: TodayStats;
   sessions: SessionSummary[];
 }
+
+export function normalizeTimerMode(value: unknown): TimerMode {
+  if (value === "focus" || value === "shortBreak" || value === "longBreak") {
+    return value;
+  }
+  return "focus";
+}

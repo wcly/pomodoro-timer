@@ -17,7 +17,7 @@ pub fn start_focus_session(
         .runtime
         .lock()
         .unwrap()
-        .start(session_id, Utc::now())?;
+        .start(session_id)?;
     Ok(())
 }
 

@@ -1,7 +1,6 @@
 import { buildSessionRangeLabel } from "../formatters";
-import { normalizeTimerMode } from "../sessionMode";
+import { normalizeTimerMode } from "../types";
 import type { SessionHistoryItemViewModel } from "../types";
-import { timerModeLabels } from "./ModeTabs";
 
 interface SessionHistoryItemProps {
   item: SessionHistoryItemViewModel;
@@ -11,7 +10,7 @@ interface SessionHistoryItemProps {
 export function SessionHistoryItem({ item, onOpen }: SessionHistoryItemProps) {
   const mode = normalizeTimerMode(item.session.mode);
   const isFocus = mode === "focus";
-  const modeLabel = item.modeLabel || timerModeLabels[mode];
+  const modeLabel = item.modeLabel;
 
   return (
     <button

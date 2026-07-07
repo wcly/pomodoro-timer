@@ -4,17 +4,11 @@ mod foreground;
 mod models;
 mod runtime;
 mod stats;
-mod storage;
+
 
 use std::sync::Mutex;
 
 use runtime::FocusRuntime;
-
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 
 pub struct AppState {
     runtime: Mutex<FocusRuntime>,
@@ -28,7 +22,6 @@ pub fn run() {
             runtime: Mutex::new(FocusRuntime::default()),
         })
         .invoke_handler(tauri::generate_handler![
-            greet,
             commands::start_focus_session,
             commands::pause_focus_session,
             commands::resume_focus_session,
@@ -40,28 +33,5 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::models::ForegroundSample;
-    use crate::stats::aggregate_samples;
-    use crate::storage::JsonStorage;
-    use chrono::{TimeZone, Utc};
-    use std::path::PathBuf;
 
-    #[test]
-    fn task5_modules_are_integrated_into_the_application_crate() {
-        let _storage = JsonStorage {
-            sessions_path: PathBuf::from("sessions.json"),
-            usage_path: PathBuf::from("usage.json"),
-        };
-        let samples = vec![ForegroundSample::new(
-            "com.microsoft.VSCode",
-            "VS Code",
-            Utc.timestamp_opt(1, 0).unwrap(),
-        )];
 
-        let rows = aggregate_samples("session-1", 1, &samples);
-
-        assert_eq!(rows.len(), 1);
-    }
-}

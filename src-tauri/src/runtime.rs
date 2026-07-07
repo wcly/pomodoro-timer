@@ -1,6 +1,5 @@
 use crate::error::AppError;
 use crate::models::ForegroundSample;
-use chrono::{DateTime, Utc};
 
 #[derive(Debug, Default)]
 pub struct FocusRuntime {
@@ -8,24 +7,22 @@ pub struct FocusRuntime {
 }
 
 #[derive(Debug)]
-pub struct CompletedFocusSession {
+pub(crate) struct CompletedFocusSession {
     pub session_id: String,
     pub samples: Vec<ForegroundSample>,
 }
 
 #[derive(Debug)]
-pub struct RunningFocusSession {
+pub(crate) struct RunningFocusSession {
     pub session_id: String,
-    pub started_at: DateTime<Utc>,
     pub paused: bool,
     pub samples: Vec<ForegroundSample>,
 }
 
 impl FocusRuntime {
-    pub fn start(&mut self, session_id: String, started_at: DateTime<Utc>) -> Result<(), AppError> {
+    pub fn start(&mut self, session_id: String) -> Result<(), AppError> {
         self.active = Some(RunningFocusSession {
             session_id,
-            started_at,
             paused: false,
             samples: Vec::new(),
         });
@@ -81,9 +78,7 @@ mod tests {
     #[test]
     fn records_samples_only_while_running() {
         let mut runtime = FocusRuntime::default();
-        runtime
-            .start("session-1".into(), Utc.timestamp_opt(100, 0).unwrap())
-            .unwrap();
+        runtime.start("session-1".into()).unwrap();
         runtime
             .capture(ForegroundSample::new(
                 "com.microsoft.VSCode",
@@ -108,9 +103,7 @@ mod tests {
     #[test]
     fn finish_returns_collected_samples_and_clears_the_active_session() {
         let mut runtime = FocusRuntime::default();
-        runtime
-            .start("session-1".into(), Utc.timestamp_opt(100, 0).unwrap())
-            .unwrap();
+        runtime.start("session-1".into()).unwrap();
         runtime
             .capture(ForegroundSample::new(
                 "com.microsoft.VSCode",

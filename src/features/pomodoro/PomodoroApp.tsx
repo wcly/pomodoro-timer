@@ -8,7 +8,7 @@ import {
   resumeFocusSession,
   startFocusSession,
 } from "./focusSessionApi";
-import { normalizeTimerMode } from "./sessionMode";
+
 import { SessionDetailPage } from "./screens/SessionDetailPage";
 import { StatsPage } from "./screens/StatsPage";
 import { TimerPage } from "./screens/TimerPage";
@@ -16,11 +16,11 @@ import type {
   SessionDetail,
   SessionHistoryItemViewModel,
   SessionSummary,
-  SessionUsageRow,
   TimerDurations,
   TimerMode,
   TodayStats,
 } from "./types";
+import { normalizeTimerMode } from "./types";
 import { formatDuration } from "./formatters";
 import { usePomodoroTimer } from "./usePomodoroTimer";
 
@@ -171,7 +171,7 @@ export function PomodoroApp({
         finishFocusSession(session.id, session.durationSeconds).then((usage) => {
           setSessionDetailsById((current) => ({
             ...current,
-            [session.id]: buildSessionDetail(session, usage),
+            [session.id]: { session, usage },
           }));
         }),
       );
@@ -193,13 +193,6 @@ export function PomodoroApp({
   function clearActiveSession() {
     activeSessionIdRef.current = null;
     activeSessionStartedAtRef.current = null;
-  }
-
-  function buildSessionDetail(session: SessionSummary, usage: SessionUsageRow[]): SessionDetail {
-    return {
-      session,
-      usage,
-    };
   }
 
   function handleStart() {

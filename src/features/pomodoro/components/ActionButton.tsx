@@ -2,17 +2,17 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  emphasis?: "primary" | "secondary" | "ghost" | "ink";
+  emphasis?: "primary" | "ink";
 }
 
 export function ActionButton({
   children,
   className,
-  emphasis = "secondary",
+  emphasis,
   type = "button",
   ...props
 }: ActionButtonProps) {
-  const classes = ["action-button", `action-button--${emphasis}`, className]
+  const classes = ["action-button", emphasis && `action-button--${emphasis}`, className]
     .filter(Boolean)
     .join(" ");
 

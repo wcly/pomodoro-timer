@@ -1,6 +1,8 @@
 import { ActionButton } from "../components/ActionButton";
+import { timerModeLabels } from "../components/ModeTabs";
 import { UsageRow } from "../components/UsageRow";
 import { buildSessionRangeLabel, formatDuration } from "../formatters";
+import { normalizeTimerMode } from "../types";
 import type { SessionDetail } from "../types";
 
 interface SessionDetailPageProps {
@@ -34,10 +36,16 @@ export function SessionDetailPage({ detail, onBack }: SessionDetailPageProps) {
               {buildSessionRangeLabel(detail.session.startedAt, detail.session.endedAt)}
             </strong>
           </div>
-          <div className="detail-session-card__column detail-session-card__column--summary">
+          <div className="detail-session-card__column">
             <span className="detail-session-card__label">总时长</span>
             <strong className="detail-session-card__value">
               {formatDuration(detail.session.durationSeconds)}
+            </strong>
+          </div>
+          <div className="detail-session-card__column">
+            <span className="detail-session-card__label">模式</span>
+            <strong className="detail-session-card__value">
+              {timerModeLabels[normalizeTimerMode(detail.session.mode)]}
             </strong>
           </div>
         </div>

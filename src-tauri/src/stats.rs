@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::{DateTime, Utc};
-use crate::models::{ForegroundSample, SessionAppUsage, SessionRecord, TimerMode, TodayStats};
+use crate::models::{ForegroundSample, SessionAppUsage};
 
 pub fn aggregate_samples(
     session_id: &str,
@@ -45,22 +44,10 @@ pub fn aggregate_samples(
     rows
 }
 
-pub fn summarize_today(sessions: &[SessionRecord], day_start: DateTime<Utc>) -> TodayStats {
-    let filtered: Vec<&SessionRecord> = sessions
-        .iter()
-        .filter(|session| session.started_at >= day_start && session.mode == TimerMode::Focus)
-        .collect();
-
-    TodayStats {
-        total_focus_seconds: filtered.iter().map(|session| session.duration_seconds).sum(),
-        completed_count: filtered.len(),
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{aggregate_samples, summarize_today};
-    use crate::models::{ForegroundSample, SessionRecord, TimerMode};
+    use super::aggregate_samples;
+    use crate::models::ForegroundSample;
     use chrono::{TimeZone, Utc};
 
     #[test]
@@ -134,35 +121,5 @@ mod tests {
         assert_eq!(rows[0].app_name, "Alpha");
         assert_eq!(rows[1].bundle_id, "com.zeta.Editor");
         assert_eq!(rows[1].app_name, "Zeta");
-    }
-
-    #[test]
-    fn summarizes_only_todays_sessions() {
-        let sessions = vec![
-            SessionRecord::new_completed(
-                "a",
-                Utc.timestamp_opt(100, 0).unwrap(),
-                Utc.timestamp_opt(1600, 0).unwrap(),
-                1500,
-            ),
-            SessionRecord::new_completed(
-                "b",
-                Utc.timestamp_opt(10, 0).unwrap(),
-                Utc.timestamp_opt(610, 0).unwrap(),
-                600,
-            ),
-            SessionRecord::new_completed_with_mode(
-                "c",
-                TimerMode::ShortBreak,
-                Utc.timestamp_opt(120, 0).unwrap(),
-                Utc.timestamp_opt(420, 0).unwrap(),
-                300,
-            ),
-        ];
-
-        let summary = summarize_today(&sessions, Utc.timestamp_opt(60, 0).unwrap());
-
-        assert_eq!(summary.completed_count, 1);
-        assert_eq!(summary.total_focus_seconds, 1500);
     }
 }
