@@ -1,8 +1,9 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { timerModeLabels } from "./components/ModeTabs";
 import {
   captureFocusSample,
   finishFocusSession,
+  loadSessionDetails,
   pauseFocusSession,
   resetFocusSession,
   resumeFocusSession,
@@ -125,15 +126,57 @@ export function PomodoroApp({
   initialSessionDetails = [],
   now = () => new Date(),
 }: PomodoroAppProps = {}) {
+  const shouldHydratePersistedSessions = initialSessionDetails.length === 0;
   const [page, setPage] = useState<PageState>({ name: "timer" });
   const [sessionDetailsById, setSessionDetailsById] = useState<Record<string, SessionDetail>>(() =>
     buildSessionDetailsById(initialSessionDetails),
   );
+  const [isLoading, setIsLoading] = useState(shouldHydratePersistedSessions);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const activeSessionIdRef = useRef<string | null>(null);
   const activeSessionStartedAtRef = useRef<string | null>(null);
-  const nextSessionNumberRef = useRef(initialSessionDetails.length + 1);
   const currentModeRef = useRef<TimerMode>("focus");
   const currentModeDurationRef = useRef(initialDurations.focus);
+
+  useEffect(() => {
+    if (!shouldHydratePersistedSessions) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function hydrateSessionDetails() {
+      setIsLoading(true);
+      setLoadError(null);
+
+      try {
+        const details = await loadSessionDetails();
+
+        if (cancelled) {
+          return;
+        }
+
+        setSessionDetailsById(buildSessionDetailsById(details));
+      } catch {
+        if (cancelled) {
+          return;
+        }
+
+        setLoadError("记录加载失败");
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void hydrateSessionDetails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldHydratePersistedSessions]);
 
   const timer = usePomodoroTimer(initialDurations, {
     onSecondElapsed() {
@@ -159,22 +202,20 @@ export function PomodoroApp({
         durationSeconds: currentModeDurationRef.current,
       };
 
-      setSessionDetailsById((current) => ({
-        ...current,
-        [sessionId]: {
-          session,
-          usage: [],
-        },
-      }));
+      void (async () => {
+        setSaveError(null);
 
-      ignoreCommandFailure(
-        finishFocusSession(session.id, session.durationSeconds).then((usage) => {
+        try {
+          const detail = await finishFocusSession(session);
+
           setSessionDetailsById((current) => ({
             ...current,
-            [session.id]: { session, usage },
+            [detail.session.id]: detail,
           }));
-        }),
-      );
+        } catch {
+          setSaveError("保存失败");
+        }
+      })();
 
       activeSessionIdRef.current = null;
       activeSessionStartedAtRef.current = null;
@@ -197,9 +238,8 @@ export function PomodoroApp({
 
   function handleStart() {
     if (activeSessionStartedAtRef.current === null && timer.remainingSeconds > 0) {
-      activeSessionIdRef.current = `session-${nextSessionNumberRef.current}`;
+      activeSessionIdRef.current = crypto.randomUUID();
       activeSessionStartedAtRef.current = now().toISOString();
-      nextSessionNumberRef.current += 1;
 
       if (activeSessionIdRef.current !== null) {
         ignoreCommandFailure(startFocusSession(activeSessionIdRef.current));
@@ -237,6 +277,39 @@ export function PomodoroApp({
     timer.pause();
   }
 
+  async function handleRetryLoad() {
+    setIsLoading(true);
+    setLoadError(null);
+
+    try {
+      const details = await loadSessionDetails();
+      setSessionDetailsById(buildSessionDetailsById(details));
+    } catch {
+      setLoadError("记录加载失败");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <main className="app-shell">
+        <p>记录加载中...</p>
+      </main>
+    );
+  }
+
+  if (loadError !== null) {
+    return (
+      <main className="app-shell">
+        <p role="alert">{loadError}</p>
+        <button type="button" onClick={() => void handleRetryLoad()}>
+          重试
+        </button>
+      </main>
+    );
+  }
+
   if (page.name === "stats") {
     return (
       <StatsPage
@@ -255,17 +328,20 @@ export function PomodoroApp({
   }
 
   return (
-    <TimerPage
-      currentMode={timer.mode}
-      modeDuration={timer.modeDuration}
-      remainingSeconds={timer.remainingSeconds}
-      completedCount={todayStats.completedCount}
-      isRunning={timer.isRunning}
-      onChangeMode={handleChangeMode}
-      onStart={handleStart}
-      onPause={handlePause}
-      onReset={handleReset}
-      onOpenStats={() => setPage({ name: "stats" })}
-    />
+    <>
+      {saveError ? <p role="alert">{saveError}</p> : null}
+      <TimerPage
+        currentMode={timer.mode}
+        modeDuration={timer.modeDuration}
+        remainingSeconds={timer.remainingSeconds}
+        completedCount={todayStats.completedCount}
+        isRunning={timer.isRunning}
+        onChangeMode={handleChangeMode}
+        onStart={handleStart}
+        onPause={handlePause}
+        onReset={handleReset}
+        onOpenStats={() => setPage({ name: "stats" })}
+      />
+    </>
   );
 }

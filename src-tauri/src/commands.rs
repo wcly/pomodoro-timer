@@ -4,8 +4,10 @@ use tauri::State;
 use crate::error::AppError;
 use crate::foreground::current_foreground_app;
 use crate::models::ForegroundSample;
-use crate::models::SessionAppUsage;
+use crate::models::SessionDetail;
+use crate::models::SessionSummary;
 use crate::stats::aggregate_samples;
+use crate::storage;
 use crate::AppState;
 
 #[tauri::command]
@@ -46,25 +48,23 @@ pub fn capture_focus_sample(state: State<'_, AppState>) -> Result<(), AppError> 
 }
 
 #[tauri::command]
+pub fn load_session_details(state: State<'_, AppState>) -> Result<Vec<SessionDetail>, AppError> {
+    storage::load_session_details(&state.db_path)
+}
+
+#[tauri::command]
 pub fn finish_focus_session(
-    session_id: String,
-    duration_seconds: i64,
+    session: SessionSummary,
     state: State<'_, AppState>,
-) -> Result<Vec<SessionAppUsage>, AppError> {
+) -> Result<SessionDetail, AppError> {
     let completed = state.runtime.lock().unwrap().finish()?;
 
-    if completed.session_id != session_id {
+    if completed.session_id != session.id {
         return Err(AppError::SessionIdMismatch);
     }
 
-    Ok(aggregate_samples(duration_seconds, &completed.samples)
-        .into_iter()
-        .map(|row| SessionAppUsage {
-            session_id: completed.session_id.clone(),
-            bundle_id: row.bundle_id,
-            app_name: row.app_name,
-            duration_seconds: row.duration_seconds,
-            percentage: row.percentage,
-        })
-        .collect())
+    let usage = aggregate_samples(session.duration_seconds, &completed.samples);
+    storage::save_session_detail(&state.db_path, &session, &usage)?;
+
+    Ok(SessionDetail { session, usage })
 }

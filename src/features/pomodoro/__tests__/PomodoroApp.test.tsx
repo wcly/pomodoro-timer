@@ -6,6 +6,7 @@ test("switches timer modes from the home page", async () => {
   const user = userEvent.setup();
 
   render(<PomodoroApp />);
+  await screen.findByText("25:00");
 
   expect(screen.getByText("25:00")).toBeInTheDocument();
   expect(screen.getByText("专注", { selector: ".status-badge" })).toBeInTheDocument();
@@ -23,6 +24,7 @@ test("shows empty stats instead of hardcoded demo data on a fresh launch", async
   const user = userEvent.setup();
 
   render(<PomodoroApp />);
+  await screen.findByText("0", { selector: ".session-meta__value" });
 
   expect(screen.getByText("0", { selector: ".session-meta__value" })).toBeInTheDocument();
 
@@ -33,19 +35,24 @@ test("shows empty stats instead of hardcoded demo data on a fresh launch", async
   expect(screen.getByText("还没有历史记录")).toBeInTheDocument();
 });
 
-test("records a finished focus session and exposes it in stats and detail", () => {
+test("records a finished focus session and exposes it in stats and detail", async () => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-07-06T09:00:00+08:00"));
 
   try {
     render(<PomodoroApp initialDurations={{ focus: 60, shortBreak: 300, longBreak: 900 }} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByText("01:00")).toBeInTheDocument();
 
     act(() => {
       screen.getByRole("button", { name: "开始" }).click();
     });
 
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(60000);
+      await Promise.resolve();
     });
 
     expect(screen.getByText("1", { selector: ".session-meta__value" })).toBeInTheDocument();
@@ -69,12 +76,16 @@ test("records a finished focus session and exposes it in stats and detail", () =
   }
 });
 
-test("records a finished short break in history and detail without affecting focus stats", () => {
+test("records a finished short break in history and detail without affecting focus stats", async () => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-07-06T10:00:00+08:00"));
 
   try {
     render(<PomodoroApp initialDurations={{ focus: 1500, shortBreak: 60, longBreak: 900 }} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByText("25:00")).toBeInTheDocument();
 
     act(() => {
       screen.getByRole("button", { name: "短休息" }).click();
@@ -84,8 +95,9 @@ test("records a finished short break in history and detail without affecting foc
       screen.getByRole("button", { name: "开始" }).click();
     });
 
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(60000);
+      await Promise.resolve();
     });
 
     expect(screen.getByText("0", { selector: ".session-meta__value" })).toBeInTheDocument();
@@ -132,6 +144,7 @@ test("treats legacy sessions without a mode as focus sessions", async () => {
       now={() => new Date("2026-07-06T13:00:00+08:00")}
     />,
   );
+  expect(screen.getByText("1", { selector: ".session-meta__value" })).toBeInTheDocument();
 
   await user.click(screen.getByRole("button", { name: /查看统计/i }));
 

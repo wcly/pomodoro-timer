@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { SessionUsageRow } from "./types";
+import type { SessionDetail, SessionSummary } from "./types";
 
 function isTauriRuntime(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -32,16 +32,18 @@ export async function captureFocusSample(): Promise<void> {
   await tauriInvoke("capture_focus_sample");
 }
 
-export async function finishFocusSession(
-  sessionId: string,
-  durationSeconds: number,
-): Promise<SessionUsageRow[]> {
+export async function loadSessionDetails(): Promise<SessionDetail[]> {
   if (!isTauriRuntime()) {
     return [];
   }
 
-  return invoke<SessionUsageRow[]>("finish_focus_session", {
-    sessionId,
-    durationSeconds,
-  });
+  return invoke<SessionDetail[]>("load_session_details");
+}
+
+export async function finishFocusSession(session: SessionSummary): Promise<SessionDetail> {
+  if (!isTauriRuntime()) {
+    return { session, usage: [] };
+  }
+
+  return invoke<SessionDetail>("finish_focus_session", { session });
 }
