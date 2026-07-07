@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2026-07-07
+
+### Changed
+
+- Updated all app icon assets with new design.
+- Added Android and iOS icon sets for mobile support.
+- Replaced launch icon (`tauri.svg` → `launch-icon.svg`).
+
 ## [0.1.0] - 2026-07-07
 
 Initial public release.
