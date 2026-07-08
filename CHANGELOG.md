@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2026-07-08
+
+### Added
+
+- Persistent session history backed by SQLite, including session detail pages with per-app usage data.
+- System notifications for focus, short break, and long break completion.
+
+### Changed
+
+- Short app usage durations now remain visible in session detail stats instead of disappearing after rounding.
+- Added macOS install guidance for clearing Gatekeeper quarantine on unsigned builds.
+
+### Fixed
+
+- Restored timer completion notifications by requesting permission on start and using the packaged app notification path consistently.
+
 ## [0.1.1] - 2026-07-07
 
 ### Changed
