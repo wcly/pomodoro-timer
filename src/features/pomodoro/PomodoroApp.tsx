@@ -9,6 +9,7 @@ import {
   resumeFocusSession,
   startFocusSession,
 } from "./focusSessionApi";
+import { notifyTimerFinished } from "./notification";
 
 import { SessionDetailPage } from "./screens/SessionDetailPage";
 import { StatsPage } from "./screens/StatsPage";
@@ -187,6 +188,8 @@ export function PomodoroApp({
       ignoreCommandFailure(captureFocusSample());
     },
     onFinished() {
+      ignoreCommandFailure(notifyTimerFinished(currentModeRef.current));
+
       const sessionId = activeSessionIdRef.current;
       const startedAt = activeSessionStartedAtRef.current;
 

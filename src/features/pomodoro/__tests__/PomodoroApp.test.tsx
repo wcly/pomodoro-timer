@@ -2,6 +2,16 @@ import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PomodoroApp } from "../PomodoroApp";
 
+const notificationApi = vi.hoisted(() => ({
+  notifyTimerFinished: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../notification", () => notificationApi);
+
+beforeEach(() => {
+  notificationApi.notifyTimerFinished.mockClear();
+});
+
 test("switches timer modes from the home page", async () => {
   const user = userEvent.setup();
 
@@ -156,4 +166,59 @@ test("treats legacy sessions without a mode as focus sessions", async () => {
 
   expect(screen.getByText("模式")).toBeInTheDocument();
   expect(screen.getByText("25m", { selector: ".detail-session-card__value" })).toBeInTheDocument();
+});
+
+test.each([
+  {
+    label: "focus",
+    modeButtonName: null,
+    durations: { focus: 60, shortBreak: 300, longBreak: 900 },
+    expectedMode: "focus",
+  },
+  {
+    label: "short break",
+    modeButtonName: "短休息",
+    durations: { focus: 1500, shortBreak: 60, longBreak: 900 },
+    expectedMode: "shortBreak",
+  },
+  {
+    label: "long break",
+    modeButtonName: "长休息",
+    durations: { focus: 1500, shortBreak: 300, longBreak: 60 },
+    expectedMode: "longBreak",
+  },
+])("sends one completion notification for $label timers", async ({
+  modeButtonName,
+  durations,
+  expectedMode,
+}) => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-07-07T09:00:00+08:00"));
+
+  try {
+    render(<PomodoroApp initialDurations={durations} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    if (modeButtonName !== null) {
+      act(() => {
+        screen.getByRole("button", { name: modeButtonName }).click();
+      });
+    }
+
+    act(() => {
+      screen.getByRole("button", { name: "开始" }).click();
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(60000);
+      await Promise.resolve();
+    });
+
+    expect(notificationApi.notifyTimerFinished).toHaveBeenCalledTimes(1);
+    expect(notificationApi.notifyTimerFinished).toHaveBeenCalledWith(expectedMode);
+  } finally {
+    vi.useRealTimers();
+  }
 });
