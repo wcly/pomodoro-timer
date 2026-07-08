@@ -9,7 +9,7 @@ import {
   resumeFocusSession,
   startFocusSession,
 } from "./focusSessionApi";
-import { notifyTimerFinished } from "./notification";
+import { notifyTimerFinished, requestNotificationPermission } from "./notification";
 
 import { SessionDetailPage } from "./screens/SessionDetailPage";
 import { StatsPage } from "./screens/StatsPage";
@@ -240,6 +240,8 @@ export function PomodoroApp({
   }
 
   function handleStart() {
+    ignoreCommandFailure(requestNotificationPermission());
+
     if (activeSessionStartedAtRef.current === null && timer.remainingSeconds > 0) {
       activeSessionIdRef.current = crypto.randomUUID();
       activeSessionStartedAtRef.current = now().toISOString();

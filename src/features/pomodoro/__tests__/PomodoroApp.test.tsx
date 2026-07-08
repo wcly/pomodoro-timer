@@ -4,12 +4,14 @@ import { PomodoroApp } from "../PomodoroApp";
 
 const notificationApi = vi.hoisted(() => ({
   notifyTimerFinished: vi.fn().mockResolvedValue(undefined),
+  requestNotificationPermission: vi.fn().mockResolvedValue("default"),
 }));
 
 vi.mock("../notification", () => notificationApi);
 
 beforeEach(() => {
   notificationApi.notifyTimerFinished.mockClear();
+  notificationApi.requestNotificationPermission.mockClear();
 });
 
 test("switches timer modes from the home page", async () => {
@@ -28,6 +30,15 @@ test("switches timer modes from the home page", async () => {
   await user.click(screen.getByRole("button", { name: "长休息" }));
   expect(screen.getByText("长休息", { selector: ".status-badge" })).toBeInTheDocument();
   expect(screen.getByText("15:00")).toBeInTheDocument();
+});
+
+test("does not request notification permission until a timer starts", async () => {
+  render(<PomodoroApp />);
+  await act(async () => {
+    await Promise.resolve();
+  });
+
+  expect(notificationApi.requestNotificationPermission).not.toHaveBeenCalled();
 });
 
 test("shows empty stats instead of hardcoded demo data on a fresh launch", async () => {
@@ -221,4 +232,19 @@ test.each([
   } finally {
     vi.useRealTimers();
   }
+});
+
+test("requests notification permission when a timer starts", async () => {
+  render(<PomodoroApp initialDurations={{ focus: 60, shortBreak: 300, longBreak: 900 }} />);
+  await act(async () => {
+    await Promise.resolve();
+  });
+
+  expect(notificationApi.requestNotificationPermission).not.toHaveBeenCalled();
+
+  act(() => {
+    screen.getByRole("button", { name: "开始" }).click();
+  });
+
+  expect(notificationApi.requestNotificationPermission).toHaveBeenCalledTimes(1);
 });

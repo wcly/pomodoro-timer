@@ -23,25 +23,42 @@ function getNotificationCtor(): typeof Notification | null {
   return globalThis.Notification;
 }
 
-export async function notifyTimerFinished(mode: TimerMode): Promise<void> {
+async function requestNotificationPermissionFromApi(): Promise<NotificationPermission | null> {
   const NotificationCtor = getNotificationCtor();
 
   if (NotificationCtor === null) {
-    return;
+    return null;
   }
 
-  try {
-    let permission = NotificationCtor.permission;
+  if (NotificationCtor.permission !== "default") {
+    return NotificationCtor.permission;
+  }
 
-    if (permission === "default") {
-      permission = await NotificationCtor.requestPermission();
-    }
+  return await NotificationCtor.requestPermission();
+}
+
+export async function requestNotificationPermission(): Promise<NotificationPermission | null> {
+  try {
+    return await requestNotificationPermissionFromApi();
+  } catch {
+    return null;
+  }
+}
+
+export async function notifyTimerFinished(mode: TimerMode): Promise<void> {
+  try {
+    const permission = await requestNotificationPermission();
 
     if (permission !== "granted") {
       return;
     }
 
     const message = completionMessages[mode];
+    const NotificationCtor = getNotificationCtor();
+
+    if (NotificationCtor === null) {
+      return;
+    }
 
     new NotificationCtor(message.title, { body: message.body });
   } catch {
